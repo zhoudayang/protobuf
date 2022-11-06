@@ -50,11 +50,12 @@ namespace protobuf {
 // place in open source code.  Feel free to fill this function in with your
 // own disgusting hack if you want the perf boost.
 inline void STLStringResizeUninitialized(std::string* s, size_t new_size) {
-#if defined(__GNUC__) && __GNUC__ <= 10
-  uint64_t *ptr = *reinterpret_cast<uint64_t **>(s);
-  char *c_ptr = reinterpret_cast<char *>(ptr);
-  ptr[-3] = new_size;
+#if defined(__GNUC__) && __GNUC__ >= 10
+  char *c_ptr = const_cast<char *>(str.data());
   c_ptr[new_size] = '\0';
+  uint64_t *ptr = reinterpret_cast<uint64_t *>(&str);
+  ++ptr;
+  *ptr = new_size;
 #else
   s->resize(new_size);
 #endif
